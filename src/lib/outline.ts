@@ -42,7 +42,7 @@ const circle = (cx: number, cy: number, r: number, ccw = false) => {
 export async function outlineLogo(l: LogoVariant): Promise<Outlined> {
   const font = await loadFont(l);
   const scale = SIZE / font.unitsPerEm;
-  const capH = ((font.tables.os2 as { sCapHeight?: number })?.sCapHeight || font.unitsPerEm * 0.7) * scale;
+  const capH = ((font.tables["os2"] as { sCapHeight?: number })?.sCapHeight || font.unitsPerEm * 0.7) * scale;
   const track = l.tracking * SIZE;
   const mods = new Set(l.mods ?? []);
   const sx = l.scaleX ?? 1;
@@ -53,7 +53,7 @@ export async function outlineLogo(l: LogoVariant): Promise<Outlined> {
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   const grow = (x1: number, y1: number, x2: number, y2: number) => {
     // apply matrix(sx 0 -skew 1) to corners
-    for (const [px, py] of [[x1, y1], [x2, y1], [x1, y2], [x2, y2]]) {
+    for (const [px, py] of [[x1, y1], [x2, y1], [x1, y2], [x2, y2]] as [number, number][]) {
       const tx = sx * px - skew * py;
       minX = Math.min(minX, tx); maxX = Math.max(maxX, tx);
       minY = Math.min(minY, py); maxY = Math.max(maxY, py);

@@ -13,7 +13,7 @@ export function LogoCard({ logo }: { logo: LogoVariant }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const io = new IntersectionObserver(([e]) => e.isIntersecting && setVisible(true), {
+    const io = new IntersectionObserver(([e]) => e?.isIntersecting && setVisible(true), {
       rootMargin: "300px",
     });
     io.observe(el);

@@ -50,7 +50,7 @@ function v(
 ): LogoVariant {
   const fontId = family.toLowerCase().replace(/\s+/g, "-");
   return {
-    id: slug(name), name, category, family, fontId, weight, weightLabel: W[weight],
+    id: slug(name), name, category, family, fontId, weight, weightLabel: W[weight] ?? "",
     tracking, ...extra,
   };
 }

@@ -81,7 +81,7 @@ export async function outlineLogo(l: LogoVariant): Promise<Outlined> {
     if (ch === "O" && mods.has("dot-o")) parts.push(circle(gx1 + gw / 2, -capH / 2, stroke * 0.55));
     boxes.push({ x: gx1, w: gw });
     let kern = 0;
-    if (i < glyphs.length - 1) kern = font.getKerningValue(g, glyphs[i + 1]) * scale;
+    if (i < glyphs.length - 1) kern = font.getKerningValue(g, glyphs[i + 1]!) * scale;
     x += adv + kern + (i < glyphs.length - 1 ? track : 0);
   });
 

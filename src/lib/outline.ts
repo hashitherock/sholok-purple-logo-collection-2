@@ -85,8 +85,9 @@ export async function outlineLogo(l: LogoVariant): Promise<Outlined> {
     x += adv + kern + (i < glyphs.length - 1 ? track : 0);
   });
 
-  const left = boxes[0].x;
-  const right = boxes[boxes.length - 1].x + boxes[boxes.length - 1].w;
+  const left = boxes[0]!.x;
+  const last = boxes[boxes.length - 1]!;
+  const right = last.x + last.w;
   const span = right - left;
   const gap = capH * 0.22;
 
@@ -104,11 +105,11 @@ export async function outlineLogo(l: LogoVariant): Promise<Outlined> {
     parts.push(rect(X, Y, Wd, H) + `M${f(X + t)} ${f(Y + t)}V${f(Y + H - t)}H${f(X + Wd - t)}V${f(Y + t)}Z`);
   }
   if (mods.has("bar-ol")) {
-    const a = boxes[2], b = boxes[4];
+    const a = boxes[2]!, b = boxes[4]!;
     parts.push(rect(a.x + a.w / 2, gap * 0.9, b.x + b.w / 2 - (a.x + a.w / 2), stroke * 0.45));
   }
   if (mods.has("k-bar")) {
-    const k = boxes[5];
+    const k = boxes[5]!;
     parts.push(rect(k.x + k.w + track * 0.4, -capH * 0.55, capH * 0.5, stroke * 0.6));
   }
 

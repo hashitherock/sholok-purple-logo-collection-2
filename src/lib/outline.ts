@@ -66,17 +66,16 @@ export async function outlineLogo(l: LogoVariant): Promise<Outlined> {
   glyphs.forEach((g, i) => {
     const adv = (g.advanceWidth ?? 0) * scale;
     const ch = WORD[i];
-    const bb = g.getBoundingBox();
-    const gx1 = x + bb.x1 * scale;
-    const gw = (bb.x2 - bb.x1) * scale;
+    const gp = g.getPath(x, 0, SIZE);
+    const bb = gp.getBoundingBox();
+    const gx1 = isFinite(bb.x1) ? bb.x1 : x;
+    const gw = isFinite(bb.x1) ? bb.x2 - bb.x1 : adv;
     if (ch === "O" && mods.has("ring-o")) {
       const r = capH / 2;
       const cx = gx1 + gw / 2;
       parts.push(circle(cx, -r, r) + circle(cx, -r, r - stroke, true));
     } else {
-      const gp = g.getPath(x, 0, SIZE);
-      const b = gp.getBoundingBox();
-      if (isFinite(b.x1)) grow(b.x1, b.y1, b.x2, b.y2);
+      if (isFinite(bb.x1)) grow(bb.x1, bb.y1, bb.x2, bb.y2);
       parts.push(gp.toPathData(2));
     }
     if (ch === "O" && mods.has("dot-o")) parts.push(circle(gx1 + gw / 2, -capH / 2, stroke * 0.55));

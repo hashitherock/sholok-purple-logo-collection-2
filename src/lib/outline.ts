@@ -28,11 +28,13 @@ export interface Outlined {
 
 const SIZE = 200;
 const f = (n: number) => Math.round(n * 100) / 100;
+let _grow: ((a: number, b: number, c: number, d: number) => void) | null = null;
 const rect = (x: number, y: number, w: number, h: number) =>
-  `M${f(x)} ${f(y)}H${f(x + w)}V${f(y + h)}H${f(x)}Z`;
+  (_grow?.(x, y, x + w, y + h), `M${f(x)} ${f(y)}H${f(x + w)}V${f(y + h)}H${f(x)}Z`);
 // circle; ccw=true reverses winding so nonzero fill punches a hole
 const circle = (cx: number, cy: number, r: number, ccw = false) => {
   const s = ccw ? 0 : 1;
+  _grow?.(cx - r, cy - r, cx + r, cy + r);
   return `M${f(cx - r)} ${f(cy)}A${f(r)} ${f(r)} 0 1 ${s} ${f(cx + r)} ${f(cy)}A${f(r)} ${f(r)} 0 1 ${s} ${f(cx - r)} ${f(cy)}Z`;
 };
 
@@ -47,7 +49,17 @@ export async function outlineLogo(l: LogoVariant): Promise<Outlined> {
   const skew = Math.tan(((l.skew ?? 0) * Math.PI) / 180);
   const stroke = Math.max(4, capH * (l.weight >= 700 ? 0.14 : l.weight >= 500 ? 0.1 : 0.07));
 
-  const glyphs = font.stringToGlyphs(WORD);
+  const glyphs = [...WORD].map((c) => font.charToGlyph(c));
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  const grow = (x1: number, y1: number, x2: number, y2: number) => {
+    // apply matrix(sx 0 -skew 1) to corners
+    for (const [px, py] of [[x1, y1], [x2, y1], [x1, y2], [x2, y2]]) {
+      const tx = sx * px - skew * py;
+      minX = Math.min(minX, tx); maxX = Math.max(maxX, tx);
+      minY = Math.min(minY, py); maxY = Math.max(maxY, py);
+    }
+  };
+  _grow = grow;
   const parts: string[] = [];
   const boxes: { x: number; w: number }[] = [];
   let x = 0;
@@ -62,7 +74,10 @@ export async function outlineLogo(l: LogoVariant): Promise<Outlined> {
       const cx = gx1 + gw / 2;
       parts.push(circle(cx, -r, r) + circle(cx, -r, r - stroke, true));
     } else {
-      parts.push(g.getPath(x, 0, SIZE).toPathData(2));
+      const gp = g.getPath(x, 0, SIZE);
+      const b = gp.getBoundingBox();
+      if (isFinite(b.x1)) grow(b.x1, b.y1, b.x2, b.y2);
+      parts.push(gp.toPathData(2));
     }
     if (ch === "O" && mods.has("dot-o")) parts.push(circle(gx1 + gw / 2, -capH / 2, stroke * 0.55));
     boxes.push({ x: gx1, w: gw });
@@ -104,18 +119,7 @@ export async function outlineLogo(l: LogoVariant): Promise<Outlined> {
   // Apply horizontal scale / skew transform as a group transform in the SVG
   const transform = sx !== 1 || skew ? `matrix(${sx} 0 ${-skew} 1 0 0)` : "";
 
-  // compute bounds of transformed geometry approximately using numbers in path
-  const nums = d.match(/-?\d+(\.\d+)?/g)?.map(Number) ?? [];
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  // Use glyph/mod extents instead of raw numbers (arc flags break parsing): measure in DOM if possible
-  const bounds = measure(svgD, transform);
-  if (bounds) ({ minX, maxX, minY, maxY } = bounds);
-  else {
-    for (let i = 0; i + 1 < nums.length; i += 2) {
-      minX = Math.min(minX, nums[i]); maxX = Math.max(maxX, nums[i]);
-      minY = Math.min(minY, nums[i + 1]); maxY = Math.max(maxY, nums[i + 1]);
-    }
-  }
+  _grow = null;
   const w = maxX - minX, h = maxY - minY;
   const pad = Math.max(w, h) * 0.08;
   d = svgD;
@@ -126,23 +130,6 @@ export async function outlineLogo(l: LogoVariant): Promise<Outlined> {
     width: vbW,
     height: vbH,
   };
-}
-
-function measure(d: string, transform: string) {
-  if (typeof document === "undefined") return null;
-  const ns = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(ns, "svg");
-  svg.setAttribute("style", "position:absolute;width:0;height:0;overflow:hidden;visibility:hidden");
-  const g = document.createElementNS(ns, "g");
-  const p = document.createElementNS(ns, "path");
-  p.setAttribute("d", d);
-  if (transform) p.setAttribute("transform", transform);
-  g.appendChild(p);
-  svg.appendChild(g);
-  document.body.appendChild(svg);
-  const b = g.getBBox();
-  svg.remove();
-  return { minX: b.x, maxX: b.x + b.width, minY: b.y, maxY: b.y + b.height };
 }
 
 export function splitPath(o: Outlined) {

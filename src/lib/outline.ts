@@ -76,7 +76,7 @@ export async function outlineLogo(l: LogoVariant): Promise<Outlined> {
       parts.push(circle(cx, -r, r) + circle(cx, -r, r - stroke, true));
     } else {
       if (isFinite(bb.x1)) grow(bb.x1, bb.y1, bb.x2, bb.y2);
-      parts.push(gp.toPathData(2));
+      parts.push(cmdsToD(gp.commands));
     }
     if (ch === "O" && mods.has("dot-o")) parts.push(circle(gx1 + gw / 2, -capH / 2, stroke * 0.55));
     boxes.push({ x: gx1, w: gw });
@@ -129,6 +129,18 @@ export async function outlineLogo(l: LogoVariant): Promise<Outlined> {
     width: vbW,
     height: vbH,
   };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function cmdsToD(cmds: any[]) {
+  return cmds
+    .map((c) =>
+      c.type === "M" || c.type === "L" ? `${c.type}${f(c.x)} ${f(c.y)}`
+      : c.type === "Q" ? `Q${f(c.x1)} ${f(c.y1)} ${f(c.x)} ${f(c.y)}`
+      : c.type === "C" ? `C${f(c.x1)} ${f(c.y1)} ${f(c.x2)} ${f(c.y2)} ${f(c.x)} ${f(c.y)}`
+      : "Z",
+    )
+    .join("");
 }
 
 export function splitPath(o: Outlined) {

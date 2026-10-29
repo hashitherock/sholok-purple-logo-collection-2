@@ -21,7 +21,6 @@ export type Mod =
   | "frame"
   | "ring-o"
   | "dot-o"
-  | "split"
   | "bar-ol"
   | "k-bar"
   | "side-rules";
@@ -98,7 +97,7 @@ export const LOGOS: LogoVariant[] = [
   // Custom
   v("Orbit O", "custom", "Montserrat", 700, 0.06, { mods: ["ring-o"] }),
   v("Halo Dots", "custom", "Jost", 500, 0.12, { mods: ["dot-o"] }),
-  v("Split Horizon", "custom", "Archivo Black", 400, 0.03, { mods: ["split"] }),
+  v("Ruled Horizon", "custom", "Archivo Black", 400, 0.03, { mods: ["underline", "overline"] }),
   v("O–L–O Bridge", "custom", "Outfit", 700, 0.04, { mods: ["bar-ol"] }),
   v("Struck K", "custom", "Space Grotesk", 700, 0.04, { mods: ["k-bar"] }),
   v("Framed Monolith", "custom", "Cinzel", 700, 0.14, { mods: ["frame"] }),

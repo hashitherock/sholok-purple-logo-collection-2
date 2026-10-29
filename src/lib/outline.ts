@@ -99,11 +99,7 @@ export async function outlineLogo(l: LogoVariant): Promise<Outlined> {
   }
 
   let d = parts.join("");
-  // Bounding box via a parsed path
-  const tmp = new opentype.Path();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (tmp as any).commands = [];
-  let svgD = d;
+  const svgD = d;
 
   // Apply horizontal scale / skew transform as a group transform in the SVG
   const transform = sx !== 1 || skew ? `matrix(${sx} 0 ${-skew} 1 0 0)` : "";

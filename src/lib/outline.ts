@@ -1,4 +1,4 @@
-import opentype from "opentype.js";
+import * as opentype from "opentype.js";
 import { BRAND_HEX, WORD, fontUrl, type LogoVariant } from "./logos";
 
 const cache = new Map<string, Promise<opentype.Font>>();
